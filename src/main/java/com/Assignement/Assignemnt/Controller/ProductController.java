@@ -54,21 +54,25 @@ public class ProductController {
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadJsonFile() {
         try {
-            List<Product> products = productService.findAllProducts(); // Assuming you have a method in your service
+            List<Product> products = productService.findAllProducts(); // Fetch products
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(products);
 
             ByteArrayResource resource = new ByteArrayResource(json.getBytes());
+
+            logger.info("Generated JSON file of size: {} bytes", json.getBytes().length);
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=products.json")
                     .contentType(MediaType.APPLICATION_JSON)
+                    .contentLength(resource.contentLength())
                     .body(resource);
         } catch (IOException e) {
             logger.error("Error generating JSON file: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ByteArrayResource("Error generating JSON file.".getBytes()));
         }
     }
-
 
    
 
